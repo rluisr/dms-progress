@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go/aws"
+	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 
@@ -52,26 +54,26 @@ func slack(body string) {
 
 	jsonStr := `{"channel":"` + channel + `","username":"` + name + `","text":"` + body + `"}`
 
-	req, err := http.NewRequest(
+	req, _ := http.NewRequest(
 		"POST",
 		os.Getenv("SLACK_INCOMING_URL"),
 		bytes.NewBuffer([]byte(jsonStr)),
 	)
-
-	if err != nil {
-		fmt.Print(err)
-	}
 
 	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Print(err)
+		panic(err)
 	}
-
-	fmt.Print(resp)
-	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		b, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			panic(err)
+		}
+		log.Fatalf("response code is not 200 got: %d\n%s", resp.StatusCode, string(b))
+	}
 }
 
 func main() {
