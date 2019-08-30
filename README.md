@@ -16,3 +16,17 @@ go build -a -tags netgo -installsuffix netgo --ldflags '-extldflags "-static"' -
 handler is `main` and you have to set these environment variables.
 - `SLACK_INCOMING_URL`
 - `REGION`
+
+and need creating policy of dms.
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": "dms:*",
+            "Resource": "*"
+        }
+    ]
+}
+```
